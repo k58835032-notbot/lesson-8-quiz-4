@@ -1,20 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <title>lesson-8-quiz-4</title>
-    
-
-  </head>
-    
-  <body>
-  <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Japanese Word Listening Quiz</title>
+
   <style>
     body {
       font-family: "Hiragino Kaku Gothic Pro", "Meiryo", sans-serif;
@@ -24,30 +14,115 @@
       padding:40px;
       color:#333;
       text-align:center;
-      background:transparent;
     }
-    h1{color:#b23b3b;font-size:2em;margin-bottom:20px;}
-    button{font-size:18px;padding:12px 24px;margin:10px;border-radius:12px;cursor:pointer;transition:.3s}
-    #playSound{background:#fff;color:#b23b3b;border:3px solid #b23b3b}
-    #playSound:hover{background:#ffe6f2}
-    .choice{background:#b23b3b;color:#fff;border:2px solid #b23b3b;padding:10px 18px;margin:6px;border-radius:10px}
-    .choice:hover{background:#ff4da6}
-    #choices{display:flex;flex-wrap:wrap;justify-content:center;max-width:720px}
-    #result{font-size:20px;margin-top:18px;font-weight:600}
-    .meta{font-size:0.9rem;color:#666;margin-top:8px}
+
+    h1 {
+      color:#b23b3b;
+      font-size:2em;
+      margin-bottom:20px;
+    }
+
+    button {
+      font-size:18px;
+      padding:12px 24px;
+      margin:10px;
+      border-radius:12px;
+      cursor:pointer;
+      transition:.3s;
+    }
+
+    #playSound {
+      background:#fff;
+      color:#b23b3b;
+      border:3px solid #b23b3b;
+    }
+
+    #playSound:hover {
+      background:#ffe6f2;
+    }
+
+    .choice {
+      background:#b23b3b;
+      color:#fff;
+      border:2px solid #b23b3b;
+      padding:10px 18px;
+      margin:6px;
+      border-radius:10px;
+    }
+
+    .choice:hover {
+      background:#ff4da6;
+    }
+
+    #choices {
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      max-width:720px;
+    }
+
+    #result {
+      font-size:20px;
+      margin-top:18px;
+      font-weight:600;
+    }
+
+    .meta {
+      font-size:0.9rem;
+      color:#666;
+      margin-top:8px;
+    }
+
+    /* ===== End screen ===== */
+    #endScreen {
+      display:none;
+      margin-top:30px;
+      padding:30px 40px;
+      border-radius:20px;
+      background:linear-gradient(135deg,#ffe6f2,#fff);
+      box-shadow:0 12px 30px rgba(0,0,0,.15);
+      animation:fadeIn .6s ease;
+    }
+
+    #endScreen h2 {
+      color:#b23b3b;
+      font-size:1.8em;
+    }
+
+    #restartQuiz {
+      background:#b23b3b;
+      color:#fff;
+      border:none;
+    }
+
+    #restartQuiz:hover {
+      background:#ff4da6;
+    }
+
+    @keyframes fadeIn {
+      from {opacity:0; transform:translateY(10px);}
+      to {opacity:1; transform:translateY(0);}
+    }
   </style>
 </head>
 
 <body>
+
 <h1>🎧 Japanese Word Listening Quiz</h1>
 <button id="playSound">▶️ Play Sound</button>
+
 <div id="choices"></div>
 <div id="result"></div>
-<div class="meta">Click Play Sound, then choose the correct hiragana.</div>
+<div class="meta">Listen and choose the correct hiragana.</div>
 
-<!-- ================= AUDIO ================= -->
+<!-- ===== End screen ===== -->
+<div id="endScreen">
+  <h2>🎉 Quiz Complete!</h2>
+  <p id="finalScore"></p>
+  <button id="restartQuiz">🔁 Restart</button>
+</div>
 
-<!-- ma-row -->
+<!-- ===== AUDIO (examples) ===== -->
 <audio id="mado" src="audio/mado.mp3"></audio>
 <audio id="machi" src="audio/machi.mp3"></audio>
 <audio id="mame" src="audio/mame.mp3">
@@ -88,17 +163,14 @@
 <audio id="meishi" src="audio/meishi.mp3"></audio>
 <audio id="meshi" src="audio/meshi.mp3"></audio>
 <audio id="hachimitsu" src="audio/hachimitsu.mp3"></audio>
-<!-- ================= SCRIPT ================= -->
 <script>
 let currentQuestion = null;
 let questionCount = 0;
 let score = 0;
-const maxQuestions = 50;
+const maxQuestions = 10;
 
 const quizQuestions = [
-
-  /* ま-row */
-  { q:"mado", options:["まど","まと","まこ","まどー"], correct:"まど" },
+    { q:"mado", options:["まど","まと","まこ","まどー"], correct:"まど" },
   { q:"machi", options:["まち","まし","まじ","まき"], correct:"まち" },
   { q:"mushi", options:["むし","むじ","むち","むひ"], correct:"むし" },
   { q:"mame", options:["まめ","まね","まみ","まへ"], correct:"まめ" },
@@ -149,9 +221,14 @@ const quizQuestions = [
 
 function newQuestion() {
   if (questionCount >= maxQuestions) {
-    alert(`Quiz finished! Score: ${score} / ${maxQuestions}`);
-    questionCount = 0;
-    score = 0;
+    document.getElementById("choices").innerHTML = "";
+    document.getElementById("playSound").style.display = "none";
+
+    document.getElementById("finalScore").textContent =
+      `Your score: ${score} / ${maxQuestions}`;
+
+    document.getElementById("endScreen").style.display = "block";
+    return;
   }
 
   questionCount++;
@@ -161,7 +238,7 @@ function newQuestion() {
   choicesDiv.innerHTML = "";
 
   currentQuestion.options
-    .sort(() => 0.5 - Math.random())
+    .sort(() => Math.random() - 0.5)
     .forEach(option => {
       const btn = document.createElement("button");
       btn.className = "choice";
@@ -188,22 +265,28 @@ function checkAnswer(answer) {
 
   if (answer === currentQuestion.correct) {
     score++;
-    result.textContent = `✅ Correct! (${questionCount}/${maxQuestions})`;
+    result.textContent = "✅ Correct!";
     result.style.color = "#28a745";
   } else {
-    result.textContent = `❌ Wrong — ${currentQuestion.correct} (${questionCount}/${maxQuestions})`;
+    result.textContent = `❌ ${currentQuestion.correct}`;
     result.style.color = "#d63384";
   }
 
-  setTimeout(newQuestion, 1000);
+  setTimeout(newQuestion, 900);
 }
 
 document.getElementById("playSound").addEventListener("click", playCurrentSound);
+
+document.getElementById("restartQuiz").addEventListener("click", () => {
+  questionCount = 0;
+  score = 0;
+  document.getElementById("endScreen").style.display = "none";
+  document.getElementById("playSound").style.display = "inline-block";
+  newQuestion();
+});
+
 newQuestion();
 </script>
+
 </body>
-</html>
-    
-  </body>
-  
 </html>
